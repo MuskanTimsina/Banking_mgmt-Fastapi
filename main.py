@@ -1,6 +1,7 @@
 from fastapi import FastAPI,HTTPException,status # fastapi to create server,Http exception for error message 
 # and status is for error code or success code 
 from pydantic import BaseModel # for the structure of input data
+from typing import Optional
 
 app=FastAPI()
 
@@ -8,6 +9,10 @@ class Bank(BaseModel):
     id:int
     name:str
     balance:float
+class Bankupdate(BaseModel):
+    name:Optional[str]=None
+    balance:Optional[float]=None
+
 Accounts=[] #list to store the accounts details
 
 @app.get("/banks/{account_id}")
@@ -46,13 +51,36 @@ def delete_account(account_id:int):
             return{"message":f"The account with id:{account_id} is deleted sucessfully!"}
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"The account with id:{account_id} is not found") 
+
 @app.put("/banks/{account_id}")
 def update_account(account_id:int,updated_account:Bank):
     for i, b in enumerate(Accounts):
         if b.id==account_id:
-            updated_account.id=account_id
+            warning=None
+            if updated_account.id!=account_id:
+                warning="The id of account cannot be changed,it remain same !"
+                updated_account.id=account_id
             Accounts[i]=updated_account
-            return{"message":f"The account with id:{account_id} is updated successfully",
+            response={"message":f"The account with id:{account_id} is updated successfully",
                    "account":updated_account}
+            if warning is not None:
+                response["warning"]=warning
+            return response    
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"The account with this id:{account_id} is not found")      
+                        detail=f"The account with this id:{account_id} is not found")
+
+@app.patch("/banks/{account_id}")
+def patch_account(account_id:int,update_account:Bankupdate):
+    if hasattr(update_account,"id") and update_account.id is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="You are not suppose to change the id of an account")
+    for i,b in enumerate(Accounts):    
+        if b.id==account_id:
+            if update_account.name is not None:
+                b.name=update_account.name
+            if update_account.balance is not None:
+                b.balance=update_account.balance  
+            Accounts[i]=b
+            return{"message":f"The account with id:{account_id} is updated successfully"}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"The account with this id:{account_id} is not found")        
