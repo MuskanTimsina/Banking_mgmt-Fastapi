@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+# environment 
+bank_mgmt/
+# this include the db password secret keys etc , those should remain hidden
+.env
+# vscode settings
+.vscode/
+*.log
