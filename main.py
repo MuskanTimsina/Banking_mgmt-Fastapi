@@ -1,19 +1,9 @@
-from fastapi import FastAPI,HTTPException,status # fastapi to create server,Http exception for error message 
-# and status is for error code or success code 
-from pydantic import BaseModel # for the structure of input data
-from typing import Optional
-
+from fastapi import FastAPI,HTTPException,status
+from app.models import Bank
+from app.models import Bankupdate
 app=FastAPI()
 
-class Bank(BaseModel):
-    id:int
-    name:str
-    balance:float
-class Bankupdate(BaseModel):
-    name:Optional[str]=None
-    balance:Optional[float]=None
-
-Accounts=[] #list to store the accounts details
+Accounts=[] 
 
 @app.get("/banks/{account_id}")
 def get_bankdetails(account_id:int):
