@@ -1,5 +1,6 @@
 from fastapi import APIRouter,HTTPException,status
-from app.models import Bank,Bankupdate
+from app.models import Bank
+from app.schemas import Bankcreate,Bankupdate
 
 router=APIRouter()
 Accounts=[]
@@ -23,13 +24,16 @@ def get_all_acc():
                "accounts":Accounts}
     
 @router.post("/banks",status_code=status.HTTP_201_CREATED)
-def create_account(account:Bank):
+def create_account(account:Bankcreate):
     for b in Accounts:
         if b.id==account.id:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail=f"The bank account with id:{account.id} is already exist") 
-    Accounts.append(account)
-    return{"message":f"The account with id:{account.id} is created sucessfully",
+        new_account= Bank(id=account.id,
+                          name=account.name,
+                          balance=account.balance)
+        Accounts.append(new_account)
+        return{"message":f"The account with id:{account.id} is created sucessfully",
            "Bank":account}
 
 @router.put("/banks/{account_id}")
